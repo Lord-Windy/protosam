@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 #include <stdarg.h>
 
@@ -64,21 +66,37 @@ struct Object {
   i64 marked;
   i64 references;
   //table would go here
-  struct Object* reference; //first pointer here, get to next one as we go
+  struct Object** reference; //first pointer here, get to next one as we go
 };
 
 typedef struct Object Object;
 
 typedef struct {
-  i64 obj_num; //how many objects exist
-  Object* object_list; //points to the entry position on the memory list
-  Object* roots; //points to entry position on the memory list
-  u8* memory_list; //pretend page file for now
+  u64 obj_num; //how many objects exist
+  Object** object_list; //points to the entry position on the memory list
+  u64 root_num;
+  Object** roots; //points to entry position on the memory list
+  u64 mem_size;
+  u64 next_free_offset;//how far to jump to write new object in
+  u8* mem; //pretend page file for now
 } ObjectSystem;
 
 
-//OBJECT Info
+//OBJECT Functions
+ObjectSystem* obj_system_new(u64 init_mem_size);
 
+//creates and returns blank object
+Object* obj_register_new_obj(ObjectSystem* o);
+
+//register a new reference
+u64 obj_register_new_reference(Object* o, Object* ref);
+
+//Root info
+//Sets an object as a root -> necessary for mark and sweep to work
+u64 obj_register_root(Object* o);
+
+
+//TABLE Functions
 
 Table* table_new(u64 size, u64 seed);
 
